@@ -73,7 +73,6 @@ describe('Exceptions:', function() {
       });
     });
 
-    var runner = env.currentRunner();
     suite.execute();
     fakeTimer.tick(2500);
 
@@ -89,7 +88,7 @@ describe('Exceptions:', function() {
     expect(blockResults[0].message).toMatch(/fake error 1/);
 
     expect(specResults[1].passed()).toEqual(false);
-    var blockResults = specResults[1].getItems();
+    blockResults = specResults[1].getItems();
     expect(blockResults[0].passed()).toEqual(false);
     expect(blockResults[0].message).toMatch(/fake error 2/),
     expect(blockResults[1].passed()).toEqual(true);
@@ -101,7 +100,44 @@ describe('Exceptions:', function() {
     expect(blockResults[0].message).toMatch(/fake error 3/);
 
     expect(specResults[4].passed()).toEqual(true);
-
   });
 
+  it("should remove jasmine internals from reported stack traces", function() {
+    var spec;
+    var suite = env.describe('Suite for handles exceptions', function () {
+      spec = env.it('should be a test that fails because it throws an exception', function() {
+        function someNamedFunction() {
+          this.expect(true).toEqual(false);
+          throw new Error('fake error 1');
+        }
+        someNamedFunction.call(this);
+      });
+    });
+
+    suite.execute();
+
+    var webKitRegex = /^    at .*?(new |\.)([^. ]*) \((.+:[0-9]+:[0-9]+)\)+$/;
+    var firefoxRegex = /^([^.(]*)\(.*\)@(.+:[0-9]+)$/;
+
+    var stackLinks = spec.results().getItems()[0].stackTrace().split("\n");
+    var stackInfos = [];
+    for (var i = 0; i < stackLinks.length; i++) {
+
+      var match;
+      if (match = webKitRegex.exec(stackLinks[i])) {
+        stackInfos.push(match[2] + ": " + stackLinks[i]);
+      } else if (match = firefoxRegex.exec(stackLinks[i])) {
+        stackInfos.push(match[1]);
+      } else {
+        stackInfos.push(stackLinks[i]);
+      }
+    }
+    expect(stackInfos).toEqual([
+      "Error: Expected true to equal false.",
+      "__jasmine_Matchers_matcherFn__",
+      "someNamedFunction",
+      "<anonymous>"
+    ]);
+    expect({a:1,b:2,c:3}).toEqual({d:4,e:5,f:6});
+  });
 });

@@ -57,22 +57,45 @@ jasmine.MessageResult = function(text) {
   this.trace = new Error(); // todo: test better
 };
 
-jasmine.ExpectationResult = function(params) {
-  this.type = 'ExpectationResult';
-  this.matcherName = params.matcherName;
-  this.passed_ = params.passed;
-  this.expected = params.expected;
-  this.actual = params.actual;
+(function() {
+  jasmine.ExpectationResult = function __jasmine_ExpectationResult__(params) {
+    this.type = 'ExpectationResult';
+    this.matcherName = params.matcherName;
+    this.passed_ = params.passed;
+    this.expected = params.expected;
+    this.actual = params.actual;
 
-  /** @deprecated */
-  this.details = params.details;
+    /** @deprecated */
+    this.details = params.details;
 
-  this.message = this.passed_ ? 'Passed.' : params.message;
-  this.trace = this.passed_ ? '' : new Error(this.message);
-};
+    this.message = this.passed_ ? 'Passed.' : params.message;
+    this.trace = this.passed_ ? '' : new Error(this.message);
+  };
+})();
 
 jasmine.ExpectationResult.prototype.passed = function () {
   return this.passed_;
+};
+
+jasmine.ExpectationResult.prototype.stackTrace = function () {
+  var trace = [];
+  var orig = this.trace.stack.split("\n");
+  var skipNext = false;
+  for (var i = 0; i < orig.length; i++) {
+    if (skipNext) { skipNext = false; continue; }
+    if (orig[i].match(/__jasmine_Matchers_matcherFn__/)) continue;
+    if (orig[i].match(/__jasmine_ExpectationResult__/)) continue;
+    var match;
+    if (match = orig[i].match(/__jasmine_Matchers_\$([^ .()]+)\$_Matcher__/)) {
+      trace.push(orig[i]);
+      trace.push(match[1]);
+      skipNext = true;
+      continue;
+    }
+    if (orig[i].match(/__jasmine_Block_prototype_execute__/)) break;
+    trace.push(orig[i]);
+  }
+  return trace.join("\n");
 };
 
 /**

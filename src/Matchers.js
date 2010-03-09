@@ -45,7 +45,7 @@ jasmine.Matchers.wrapInto_ = function(prototype, matchersClass) {
 };
 
 jasmine.Matchers.matcherFn_ = function(matcherName, matcherFunction) {
-  return function() {
+  var wrapper = function __jasmine_Matchers_matcherFn__() {
     var matcherArgs = jasmine.util.argsToArray(arguments);
     var result = matcherFunction.apply(this, arguments);
 
@@ -84,8 +84,9 @@ jasmine.Matchers.matcherFn_ = function(matcherName, matcherFunction) {
     this.spec.addMatcherResult(expectationResult);
     return result;
   };
+  var fn = eval("(function __jasmine_Matchers_$" + matcherName + "$_Matcher__(matcherFn, args) { return matcherFn.apply(this, args); });");
+  return function() { return fn.call(this, wrapper, arguments)};
 };
-
 
 
 
