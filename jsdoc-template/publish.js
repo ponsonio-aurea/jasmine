@@ -64,7 +64,7 @@ function publish(symbolSet) {
 		var output = "";
 		output = classTemplate.process(symbol);
 		
-		IO.saveFile(publish.conf.outDir+"symbols/", symbol.alias+publish.conf.ext, output);
+		IO.saveFile(publish.conf.outDir+"symbols/", symbol.alias+publish.conf.ext+".md", output);
 	}
 	
 	// regenerate the index with different relative links, used in the index pages
@@ -78,7 +78,7 @@ function publish(symbolSet) {
 	catch(e) { print(e.message); quit(); }
 	
 	var classesIndex = classesindexTemplate.process(classes);
-	IO.saveFile(publish.conf.outDir, "index"+publish.conf.ext, classesIndex);
+	IO.saveFile(publish.conf.outDir, "index"+publish.conf.ext+".md", classesIndex);
 	classesindexTemplate = classesIndex = classes = null;
 	
 	// create the file index page
@@ -103,7 +103,7 @@ function publish(symbolSet) {
 
 	// output the file index page
 	var filesIndex = fileindexTemplate.process(allFiles);
-	IO.saveFile(publish.conf.outDir, "files"+publish.conf.ext, filesIndex);
+	IO.saveFile(publish.conf.outDir, "files"+publish.conf.ext+".md", filesIndex);
 	fileindexTemplate = filesIndex = files = null;
 }
 
@@ -149,7 +149,7 @@ function makeSrcFile(path, srcDir, name) {
 	}
 
 	if (src.hilited) {
-		IO.saveFile(srcDir, name+publish.conf.ext, src.hilited);
+		IO.saveFile(srcDir, name+publish.conf.ext+".md", src.hilited);
 	}
 }
 
