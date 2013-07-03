@@ -56,6 +56,16 @@ describe("Spy - integration specs", function() {
     expect(originalFn).not.toHaveBeenCalled();
     expect(returnValue).toEqual(42);
   });
+
+  it("can optionally call through to a provided original function", function() {
+    var originalFn = jasmine.createSpy('originalFn'),
+        spy = j$.createSpy("foo", originalFn);
+
+    spy.and.callThrough();
+    spy();
+
+    expect(originalFn).toHaveBeenCalled();
+  });
 });
 
 describe("j$.isSpy", function() {
@@ -72,5 +82,20 @@ describe("j$.isSpy", function() {
 });
 
 describe("createSpyObj", function() {
-  // TODO: fill this in
+  it("allows creating an arbitrary object where the methods are spies", function() {
+    var spyObj = j$.createSpyObj('base', ['method1', 'method2']);
+
+    expect(j$.isSpy(spyObj.method1)).toBe(true);
+    expect(j$.isSpy(spyObj.method2)).toBe(true);
+
+    expect(spyObj.method1.and.identity()).toEqual('base.method1');
+  });
+
+  it("throws when not passed in methods to double", function() {
+    expect(function() { j$.createSpyObj('base'); })
+        .toThrow("createSpyObj requires a non-empty array of method names to create spies for");
+
+    expect(function() { j$.createSpyObj('base', []); })
+        .toThrow("createSpyObj requires a non-empty array of method names to create spies for");
+  });
 });
