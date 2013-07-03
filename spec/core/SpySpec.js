@@ -26,7 +26,7 @@ describe("Spy - integration specs", function() {
     spy("foo");
 
     expect(spy.calls.count()).toEqual(1);
-    expect(spy.calls.mostRecent()).toEqual({object: window, args: ["foo"]});
+    expect(spy.calls.mostRecent()).toEqual({object: jasmine.getGlobal(), args: ["foo"]});
   });
 
   it("acts like a spy for configuration", function() {

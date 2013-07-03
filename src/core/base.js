@@ -37,12 +37,6 @@ getJasmineRequireObj().base = function(j$) {
     return Object.prototype.toString.apply(value) === '[object ' + typeName + ']';
   };
 
-  j$.pp = function(value) {
-    var stringPrettyPrinter = new j$.StringPrettyPrinter();
-    stringPrettyPrinter.format(value);
-    return stringPrettyPrinter.string;
-  };
-
   j$.isDomNode = function(obj) {
     return obj.nodeType > 0;
   };

@@ -1,4 +1,4 @@
-getJasmineRequireObj().StringPrettyPrinter = function(j$) {
+getJasmineRequireObj().pp = function(j$) {
 
   function PrettyPrinter() {
     this.ppNestLevel_ = 0;
@@ -50,7 +50,7 @@ getJasmineRequireObj().StringPrettyPrinter = function(j$) {
       if (!obj.hasOwnProperty(property)) continue;
       if (property == '__Jasmine_been_here_before__') continue;
       fn(property, obj.__lookupGetter__ ? (!j$.util.isUndefined(obj.__lookupGetter__(property)) &&
-        obj.__lookupGetter__(property) !== null) : false);
+          obj.__lookupGetter__(property) !== null) : false);
     }
   };
 
@@ -64,6 +64,7 @@ getJasmineRequireObj().StringPrettyPrinter = function(j$) {
 
     this.string = '';
   }
+
   j$.util.inherit(StringPrettyPrinter, PrettyPrinter);
 
   StringPrettyPrinter.prototype.emitScalar = function(value) {
@@ -123,5 +124,9 @@ getJasmineRequireObj().StringPrettyPrinter = function(j$) {
     this.string += value;
   };
 
-  return StringPrettyPrinter;
+  return function(value) {
+    var stringPrettyPrinter = new StringPrettyPrinter();
+    stringPrettyPrinter.format(value);
+    return stringPrettyPrinter.string;
+  };
 };
