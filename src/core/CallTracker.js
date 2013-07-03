@@ -24,6 +24,15 @@ getJasmineRequireObj().CallTracker = function() {
       return calls;
     };
 
+    this.allArgs = function() {
+      var callArgs = [];
+      for(var i = 0; i < calls.length; i++){
+        callArgs.push(calls[i].args);
+      }
+
+      return callArgs;
+    };
+
     this.first = function() {
       return calls[0];
     };

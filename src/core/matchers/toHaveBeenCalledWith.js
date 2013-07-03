@@ -12,7 +12,7 @@ getJasmineRequireObj().toHaveBeenCalledWith = function(j$) {
         }
 
         return {
-          pass: util.contains(actual.calls.all(), expectedArgs)
+          pass: util.contains(actual.calls.allArgs(), expectedArgs)
         };
       },
       message: function(actual) {

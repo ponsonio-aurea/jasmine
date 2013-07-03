@@ -239,7 +239,7 @@ getJasmineRequireObj().Env = function(j$) {
 
       return spy;
     };
-  };
+  }
 
   Env.prototype.addMatchers = function(matchersToAdd) {
     j$.Expectation.addMatchers(matchersToAdd);

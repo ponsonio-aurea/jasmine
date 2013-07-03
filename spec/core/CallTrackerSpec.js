@@ -36,6 +36,15 @@ describe("CallTracker", function() {
     expect(callTracker.argsFor(0)).toEqual([]);
   });
 
+  it("allows access for the arguments for all calls", function() {
+    var callTracker = new j$.CallTracker();
+
+    callTracker.track({object: {}, args: []});
+    callTracker.track({object: {}, args: [0, "foo"]});
+
+    expect(callTracker.allArgs()).toEqual([[], [0, "foo"]]);
+  });
+
   it("tracks the context and arguments for each call", function() {
     var callTracker = new j$.CallTracker();
 
