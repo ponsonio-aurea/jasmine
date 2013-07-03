@@ -13,6 +13,7 @@ getJasmineRequireObj().core = function(jRequire) {
   jRequire.base(j$);
   j$.util = jRequire.util();
   j$.Any = jRequire.Any();
+  j$.CallTracker = jRequire.CallTracker();
   j$.Clock = jRequire.Clock();
   j$.DelayedFunctionScheduler = jRequire.DelayedFunctionScheduler();
   j$.Env = jRequire.Env(j$);
@@ -27,6 +28,7 @@ getJasmineRequireObj().core = function(jRequire) {
   j$.ReportDispatcher = jRequire.ReportDispatcher();
   j$.Spec = jRequire.Spec();
   j$.SpyDelegate = jRequire.SpyDelegate(j$);
+  j$.SpyStrategy = jRequire.SpyStrategy();
   j$.Suite = jRequire.Suite();
   j$.version = jRequire.version();
 

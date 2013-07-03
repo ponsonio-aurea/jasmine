@@ -1,15 +1,17 @@
 getJasmineRequireObj().Env = function(j$) {
   function Env(options) {
     options = options || {};
+
     var self = this;
     var global = options.global || j$.getGlobal(),
-      now = options.now || function() { return new Date().getTime(); };
+        now = options.now || function() { return new Date().getTime(); };
 
     var catchExceptions = true;
 
     this.clock = new j$.Clock(global, new j$.DelayedFunctionScheduler());
 
-    this.spies_ = [];
+    var spies = [];
+
     this.currentSpec = null;
 
     this.reporter = new j$.ReportDispatcher([
@@ -83,13 +85,13 @@ getJasmineRequireObj().Env = function(j$) {
 
     // TODO: we may just be able to pass in the fn instead of wrapping here
     var buildExpectationResult = j$.buildExpectationResult,
-      exceptionFormatter = new j$.ExceptionFormatter(),
-      expectationResultFactory = function(attrs) {
-        attrs.messageFormatter = exceptionFormatter.message;
-        attrs.stackFormatter = exceptionFormatter.stack;
+        exceptionFormatter = new j$.ExceptionFormatter(),
+        expectationResultFactory = function(attrs) {
+          attrs.messageFormatter = exceptionFormatter.message;
+          attrs.stackFormatter = exceptionFormatter.stack;
 
-        return buildExpectationResult(attrs);
-      };
+          return buildExpectationResult(attrs);
+        };
 
     // TODO: fix this naming, and here's where the value comes in
     this.catchExceptions = function(value) {
@@ -101,7 +103,7 @@ getJasmineRequireObj().Env = function(j$) {
       return catchExceptions;
     };
 
-    this.catchException = function(e){
+    this.catchException = function(e) {
       return j$.Spec.isPendingSpecException(e) || catchExceptions;
     };
 
@@ -152,8 +154,16 @@ getJasmineRequireObj().Env = function(j$) {
 
       return spec;
 
+      function removeAllSpies() {
+        for (var i = 0; i < spies.length; i++) {
+          var spyEntry = spies[i];
+          spyEntry.baseObj[spyEntry.methodName] = spyEntry.originalValue;
+        }
+        spies = [];
+      }
+
       function specResultCallback(result) {
-        self.removeAllSpies();
+        removeAllSpies();
         j$.Expectation.resetMatchers();
         customEqualityTesters.length = 0;
         self.clock.uninstall();
@@ -201,7 +211,35 @@ getJasmineRequireObj().Env = function(j$) {
         self.reporter.jasmineDone({executionTime: now() - startTime});
       });
     };
-  }
+
+    this.spyOn = function(obj, methodName) {
+      if (j$.util.isUndefined(obj)) {
+        throw "spyOn could not find an object to spy upon for " + methodName + "()";
+      }
+
+      if (j$.util.isUndefined(obj[methodName])) {
+        throw methodName + '() method does not exist';
+      }
+
+      if (obj[methodName] && j$.isSpy(obj[methodName])) {
+        //TODO?: should this return the current spy? Downside: may cause user confusion about spy state
+        throw methodName + ' has already been spied upon';
+      }
+
+      var spy = j$.createSpy(methodName, obj[methodName]);
+
+      spies.push({
+        spy: spy,
+        baseObj: obj,
+        methodName: methodName,
+        originalValue: obj[methodName]
+      });
+
+      obj[methodName] = spy;
+
+      return spy;
+    };
+  };
 
   Env.prototype.addMatchers = function(matchersToAdd) {
     j$.Expectation.addMatchers(matchersToAdd);
@@ -215,40 +253,6 @@ getJasmineRequireObj().Env = function(j$) {
     return this.currentSpec.expect(actual);
   };
 
-  Env.prototype.spyOn = function(obj, methodName) {
-    if (j$.util.isUndefined(obj)) {
-      throw "spyOn could not find an object to spy upon for " + methodName + "()";
-    }
-
-    if (j$.util.isUndefined(obj[methodName])) {
-      throw methodName + '() method does not exist';
-    }
-
-    if (obj[methodName] && obj[methodName].isSpy) {
-      //TODO?: should this return the current spy? Downside: may cause user confusion about spy state
-      throw new Error(methodName + ' has already been spied upon');
-    }
-
-    var spyObj = j$.createSpy(methodName);
-
-    this.spies_.push(spyObj);
-    spyObj.baseObj = obj;
-    spyObj.methodName = methodName;
-    spyObj.originalValue = obj[methodName];
-
-    obj[methodName] = spyObj;
-
-    return spyObj;
-  };
-
-  // TODO: move this to closure
-  Env.prototype.removeAllSpies = function() {
-    for (var i = 0; i < this.spies_.length; i++) {
-      var spy = this.spies_[i];
-      spy.baseObj[spy.methodName] = spy.originalValue;
-    }
-    this.spies_ = [];
-  };
 
   // TODO: move this to closure
   Env.prototype.versionString = function() {

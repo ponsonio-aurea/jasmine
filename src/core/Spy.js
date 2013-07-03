@@ -1,94 +1,32 @@
 getJasmineRequireObj().SpyDelegate = function(j$) {
 
-  function SpyDelegate(options) {
-    var identity = (options && options.name) || "unknown",
-      originalFn = (options && options.fn) || function() {},
-      plan = function() {},
-      callCount,
-      calls;
-
-    this.identity = function() {
-      return identity;
-    };
-
-    this.exec = function() {
-      callCount++;
-      calls.push({
-        object: this,
-        args: Array.prototype.slice.call(arguments)
-      });
-
-      return plan.apply(this, arguments);
-    };
-
-    this.wasCalled = function() {
-      return callCount > 0;
-    };
-
-    this.callCount = function() {
-      return callCount;
-    };
-
-    this.argsForCall = function(index) {
-      var call = calls[index];
-      return call ? call.args : [];
-    };
-
-    this.calls = function() {
-      return calls;
-    };
-
-    this.mostRecentCall = function() {
-      var mostRecentCall = calls[calls.length - 1];
-      return mostRecentCall && mostRecentCall;
-    };
-
-    this.reset = function() {
-      callCount = 0;
-      calls = [];
-    };
-
-    this.callThrough = function() {
-      plan = originalFn;
-    };
-
-    this.return = function(value) {
-      plan = function() {
-        return value;
-      };
-    };
-
-    this.throw = function(something) {
-      plan = function() {
-        throw something;
-      }
-    };
-
-    this.callFake = function(fn) {
-      plan = fn;
-    };
-
-    this.reset();
-  }
-
   j$.createSpy = function(name, originalFn) {
 
-    var spyDelegate = new SpyDelegate({
-        name: name,
-        fn: originalFn
-      }),
-      spy = function() {
-        return spyDelegate.exec.apply(this, arguments);
-      };
+    var spyStrategy = new j$.SpyStrategy({
+          name: name,
+          fn: originalFn
+        }),
+        callTracker = new j$.CallTracker(),
+        spy = function() {
+          callTracker.track({
+            object: this,
+            args: Array.prototype.slice.apply(arguments)
+          });
+          return spyStrategy.exec.apply(this, arguments);
+        };
 
-    spy.isSpy = true;
-    spy.and = spy.get = spyDelegate;
+    spy.and = spyStrategy;
+    spy.calls = callTracker;
 
     return spy;
   };
 
   j$.isSpy = function(putativeSpy) {
-    return putativeSpy && putativeSpy.isSpy;
+    if (!putativeSpy) {
+      return false;
+    }
+    return putativeSpy.and instanceof j$.SpyStrategy &&
+        putativeSpy.calls instanceof j$.CallTracker;
   };
 
   j$.createSpyObj = function(baseName, methodNames) {
@@ -102,5 +40,5 @@ getJasmineRequireObj().SpyDelegate = function(j$) {
     return obj;
   };
 
-  return SpyDelegate;
+  return {};
 };
