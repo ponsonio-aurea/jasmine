@@ -39,7 +39,7 @@ describe("SpyStrategy", function() {
         spyStrategy = new j$.SpyStrategy({fn: originalFn}),
         returnValue;
 
-    spyStrategy.return(17);
+    spyStrategy.callReturn(17);
     returnValue = spyStrategy.exec();
 
     expect(originalFn).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe("SpyStrategy", function() {
     var originalFn = jasmine.createSpy("original"),
         spyStrategy = new j$.SpyStrategy({fn: originalFn});
 
-    spyStrategy.throw("bar");
+    spyStrategy.callThrow("bar");
 
     expect(function() { spyStrategy.exec(); }).toThrow("bar");
     expect(originalFn).not.toHaveBeenCalled();
@@ -75,8 +75,8 @@ describe("SpyStrategy", function() {
         spyStrategy = new j$.SpyStrategy({getSpy: spyFn});
 
     expect(spyStrategy.callThrough()).toBe(spy);
-    expect(spyStrategy.return()).toBe(spy);
-    expect(spyStrategy.throw()).toBe(spy);
+    expect(spyStrategy.callReturn()).toBe(spy);
+    expect(spyStrategy.callThrow()).toBe(spy);
     expect(spyStrategy.callFake()).toBe(spy);
   });
 });

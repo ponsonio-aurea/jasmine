@@ -21,14 +21,14 @@ getJasmineRequireObj().SpyStrategy = function() {
       return getSpy();
     };
 
-    this.return = function(value) {
+    this.callReturn = function(value) {
       plan = function() {
         return value;
       };
       return getSpy();
     };
 
-    this.throw = function(something) {
+    this.callThrow = function(something) {
       plan = function() {
         throw something;
       }

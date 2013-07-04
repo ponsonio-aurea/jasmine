@@ -50,7 +50,7 @@ describe("Spy - integration specs", function() {
     originalFn.reset();
     spy.calls.reset();
 
-    spy.and.return(42);
+    spy.and.callReturn(42);
     returnValue = spy();
 
     expect(originalFn).not.toHaveBeenCalled();
