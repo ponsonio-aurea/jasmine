@@ -1,8 +1,11 @@
 getJasmineRequireObj().SpyStrategy = function() {
 
   function SpyStrategy(options) {
-    var identity = (options && options.name) || "unknown",
-        originalFn = (options && options.fn) || function() {},
+    options = options || {};
+
+    var identity = options.name || "unknown",
+        originalFn = options.fn || function() {},
+        getSpy = options.getSpy || function() {},
         plan = function() {};
 
     this.identity = function() {
@@ -15,22 +18,26 @@ getJasmineRequireObj().SpyStrategy = function() {
 
     this.callThrough = function() {
       plan = originalFn;
+      return getSpy();
     };
 
     this.return = function(value) {
       plan = function() {
         return value;
       };
+      return getSpy();
     };
 
     this.throw = function(something) {
       plan = function() {
         throw something;
       }
+      return getSpy();
     };
 
     this.callFake = function(fn) {
       plan = fn;
+      return getSpy();
     };
   }
 

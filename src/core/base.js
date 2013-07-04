@@ -53,7 +53,8 @@ getJasmineRequireObj().base = function(j$) {
 
     var spyStrategy = new j$.SpyStrategy({
           name: name,
-          fn: originalFn
+          fn: originalFn,
+          getSpy: function() { return spy; }
         }),
         callTracker = new j$.CallTracker(),
         spy = function() {

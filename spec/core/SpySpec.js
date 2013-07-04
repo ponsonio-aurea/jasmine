@@ -55,6 +55,8 @@ describe("Spy - integration specs", function() {
 
     expect(originalFn).not.toHaveBeenCalled();
     expect(returnValue).toEqual(42);
+
+    expect(spy.and.callThrough()).toBe(spy);
   });
 
   it("can optionally call through to a provided original function", function() {

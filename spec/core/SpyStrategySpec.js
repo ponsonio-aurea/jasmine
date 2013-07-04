@@ -68,4 +68,15 @@ describe("SpyStrategy", function() {
     expect(originalFn).not.toHaveBeenCalled();
     expect(returnValue).toEqual(67);
   });
+
+  it("returns the spy after changing the strategy", function(){
+    var spy = {},
+        spyFn = jasmine.createSpy('spyFn').andReturn(spy),
+        spyStrategy = new j$.SpyStrategy({getSpy: spyFn});
+
+    expect(spyStrategy.callThrough()).toBe(spy);
+    expect(spyStrategy.return()).toBe(spy);
+    expect(spyStrategy.throw()).toBe(spy);
+    expect(spyStrategy.callFake()).toBe(spy);
+  });
 });
