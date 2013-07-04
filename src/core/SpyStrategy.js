@@ -31,7 +31,7 @@ getJasmineRequireObj().SpyStrategy = function() {
     this.callThrow = function(something) {
       plan = function() {
         throw something;
-      }
+      };
       return getSpy();
     };
 

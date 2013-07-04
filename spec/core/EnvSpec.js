@@ -51,44 +51,6 @@ describe("Env", function() {
     });
   });
 
-  describe("#spyOn", function() {
-    it("creates a spy for the specified property", function() {
-      var obj = { dog: function() {}};
-
-      env.spyOn(obj, "dog");
-
-      expect(j$.isSpy(obj.dog)).toBe(true);
-    });
-
-    it("saves off the original function for calling through", function() {
-      var obj = { dog: function() { return 'arf'; }};
-
-      env.spyOn(obj, "dog");
-      obj.dog.and.callThrough();
-
-      expect(obj.dog()).toEqual('arf')
-    });
-
-    it("throws if the object is undefined", function() {
-      var obj = void 0;
-
-      expect(function() { env.spyOn(obj, "dog"); }).toThrow("spyOn could not find an object to spy upon for dog()");
-    });
-
-    it("throws if the method does not exist on the object", function() {
-      var obj = {};
-
-      expect(function() { env.spyOn(obj, "dog"); }).toThrow("dog() method does not exist");
-    });
-
-    it("throws if the method has already been spied upon", function() {
-      var obj = { dog: function() {} };
-
-      env.spyOn(obj, "dog");
-
-      expect(function() { env.spyOn(obj, "dog"); }).toThrow("dog has already been spied upon");
-    });
-  });
 });
 
 // TODO: move these into a separate file
@@ -96,7 +58,7 @@ describe("Env (integration)", function() {
 
   it("Suites execute as expected (no nesting)", function() {
     var env = new j$.Env(),
-        calls = [];
+      calls = [];
 
     env.describe("A Suite", function() {
       env.it("with a spec", function() {
@@ -117,7 +79,7 @@ describe("Env (integration)", function() {
 
   it("Nested Suites execute as expected", function() {
     var env = new j$.Env(),
-        calls = [];
+      calls = [];
 
     env.describe("Outer suite", function() {
       env.it("an outer spec", function() {
@@ -145,7 +107,7 @@ describe("Env (integration)", function() {
 
   it("Multiple top-level Suites execute as expected", function() {
     var env = new j$.Env(),
-        calls = [];
+      calls = [];
 
     env.describe("Outer suite", function() {
       env.it("an outer spec", function() {
@@ -179,9 +141,9 @@ describe("Env (integration)", function() {
 
   it("Mock clock can be installed and used in tests", function() {
     var globalSetTimeout = jasmine.createSpy('globalSetTimeout'),
-        delayedFunctionForGlobalClock = jasmine.createSpy('delayedFunctionForGlobalClock'),
-        delayedFunctionForMockClock = jasmine.createSpy('delayedFunctionForMockClock'),
-        env = new j$.Env({global: { setTimeout: globalSetTimeout }});
+      delayedFunctionForGlobalClock = jasmine.createSpy('delayedFunctionForGlobalClock'),
+      delayedFunctionForMockClock = jasmine.createSpy('delayedFunctionForMockClock'),
+      env = new j$.Env({global: { setTimeout: globalSetTimeout }});
 
     env.describe("tests", function() {
       env.it("test with mock clock", function() {
@@ -206,18 +168,18 @@ describe("Env (integration)", function() {
   // TODO: something is wrong with this spec
   it("should report as expected", function() {
     var fakeNow = jasmine.createSpy('fake Date.now'),
-        env = new j$.Env({now: fakeNow}),
-        reporter = jasmine.createSpyObj('fakeReporter', [
-          "jasmineStarted",
-          "jasmineDone",
-          "suiteStarted",
-          "suiteDone",
-          "specStarted",
-          "specDone"
-        ]);
+      env = new j$.Env({now: fakeNow}),
+      reporter = jasmine.createSpyObj('fakeReporter', [
+        "jasmineStarted",
+        "jasmineDone",
+        "suiteStarted",
+        "suiteDone",
+        "specStarted",
+        "specDone"
+      ]);
 
-    fakeNow.andReturn(500);
-    reporter.suiteDone.andCallFake(function() { fakeNow.andReturn(1500); });
+    fakeNow.and.callReturn(500);
+    reporter.suiteDone.and.callFake(function() { fakeNow.and.callReturn(1500); });
 
     env.addReporter(reporter);
 
@@ -240,7 +202,7 @@ describe("Env (integration)", function() {
     expect(reporter.jasmineStarted).toHaveBeenCalledWith({
       totalSpecsDefined: 3
     });
-    var suiteResult = reporter.suiteStarted.calls[0].args[0];
+    var suiteResult = reporter.suiteStarted.calls.first().args[0];
     expect(suiteResult.description).toEqual("A Suite");
     expect(reporter.jasmineDone).toHaveBeenCalledWith({
       executionTime: 1000
@@ -249,7 +211,7 @@ describe("Env (integration)", function() {
 
   it("should be possible to get full name from a spec", function() {
     var env = new j$.Env({global: { setTimeout: setTimeout }}),
-        topLevelSpec, nestedSpec, doublyNestedSpec;
+      topLevelSpec, nestedSpec, doublyNestedSpec;
 
     env.describe("my tests", function() {
       topLevelSpec = env.it("are sometimes top level", function() {
@@ -269,38 +231,16 @@ describe("Env (integration)", function() {
     expect(doublyNestedSpec.getFullName()).toBe("my tests are sometimes even doubly nested.");
   });
 
-  it("Spies should be removed betweens specs", function(done) {
-    var realDog = function() {},
-        obj = { dog: realDog },
-        env = new j$.Env({global: { setTimeout: setTimeout }}),
-        reporter = {
-          specDone: function() {
-            expect(obj.dog).toBe(realDog);
-            done();
-          }
-        };
-
-    env.addReporter(reporter);
-
-    env.describe("suite", function() {
-      env.it("spec", function() {
-        env.spyOn(obj, "dog");
-      });
-    });
-
-    env.execute();
-  });
-
   it("Custom equality testers should be per spec", function() {
     var env = new j$.Env({global: { setTimeout: setTimeout }}),
-        reporter = jasmine.createSpyObj('fakeReproter', [
-          "jasmineStarted",
-          "jasmineDone",
-          "suiteStarted",
-          "suiteDone",
-          "specStarted",
-          "specDone"
-        ]);
+      reporter = jasmine.createSpyObj('fakeReproter', [
+        "jasmineStarted",
+        "jasmineDone",
+        "suiteStarted",
+        "suiteDone",
+        "specStarted",
+        "specDone"
+      ]);
 
     env.addReporter(reporter);
 
@@ -317,8 +257,8 @@ describe("Env (integration)", function() {
 
     env.execute();
 
-    var firstSpecResult = reporter.specDone.argsForCall[0][0],
-        secondSpecResult = reporter.specDone.argsForCall[1][0];
+    var firstSpecResult = reporter.specDone.calls.first().args[0],
+      secondSpecResult = reporter.specDone.calls.mostRecent().args[0];
 
     expect(firstSpecResult.status).toEqual("passed");
     expect(secondSpecResult.status).toEqual("failed");
@@ -326,17 +266,17 @@ describe("Env (integration)", function() {
 
   it("Custom matchers should be per spec", function() {
     var env = new j$.Env({global: { setTimeout: setTimeout }}),
-        matchers = {
-          toFoo: function() {}
-        },
-        reporter = jasmine.createSpyObj('fakeReproter', [
-          "jasmineStarted",
-          "jasmineDone",
-          "suiteStarted",
-          "suiteDone",
-          "specStarted",
-          "specDone"
-        ]);
+      matchers = {
+        toFoo: function() {}
+      },
+      reporter = jasmine.createSpyObj('fakeReproter', [
+        "jasmineStarted",
+        "jasmineDone",
+        "suiteStarted",
+        "suiteDone",
+        "specStarted",
+        "specDone"
+      ]);
 
     env.addReporter(reporter);
 
@@ -356,14 +296,14 @@ describe("Env (integration)", function() {
 
   it("Custom equality testers for toContain should be per spec", function() {
     var env = new j$.Env({global: { setTimeout: setTimeout }}),
-        reporter = jasmine.createSpyObj('fakeReproter', [
-          "jasmineStarted",
-          "jasmineDone",
-          "suiteStarted",
-          "suiteDone",
-          "specStarted",
-          "specDone"
-        ]);
+      reporter = jasmine.createSpyObj('fakeReproter', [
+        "jasmineStarted",
+        "jasmineDone",
+        "suiteStarted",
+        "suiteDone",
+        "specStarted",
+        "specDone"
+      ]);
 
     env.addReporter(reporter);
 
@@ -380,8 +320,8 @@ describe("Env (integration)", function() {
 
     env.execute();
 
-    var firstSpecResult = reporter.specDone.argsForCall[0][0],
-        secondSpecResult = reporter.specDone.argsForCall[1][0];
+    var firstSpecResult = reporter.specDone.calls.first().args[0],
+      secondSpecResult = reporter.specDone.calls.mostRecent().args[0];
 
     expect(firstSpecResult.status).toEqual("passed");
     expect(secondSpecResult.status).toEqual("failed");

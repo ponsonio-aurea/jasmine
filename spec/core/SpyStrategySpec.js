@@ -22,7 +22,7 @@ describe("SpyStrategy", function() {
   });
 
   it("allows an original function to be called, passed through the params and returns it's value", function() {
-    var originalFn = jasmine.createSpy("original").andReturn(42),
+    var originalFn = jasmine.createSpy("original").and.callReturn(42),
         spyStrategy = new j$.SpyStrategy({fn: originalFn}),
         returnValue;
 
@@ -30,7 +30,7 @@ describe("SpyStrategy", function() {
     returnValue = spyStrategy.exec("foo");
 
     expect(originalFn).toHaveBeenCalled();
-    expect(originalFn.mostRecentCall.args).toEqual(["foo"]);
+    expect(originalFn.calls.mostRecent().args).toEqual(["foo"]);
     expect(returnValue).toEqual(42);
   });
 
@@ -58,7 +58,7 @@ describe("SpyStrategy", function() {
 
   it("allows a fake function to be called instead", function() {
     var originalFn = jasmine.createSpy("original"),
-        fakeFn = jasmine.createSpy("fake").andReturn(67),
+        fakeFn = jasmine.createSpy("fake").and.callReturn(67),
         spyStrategy = new j$.SpyStrategy({fn: originalFn}),
         returnValue;
 
@@ -71,7 +71,7 @@ describe("SpyStrategy", function() {
 
   it("returns the spy after changing the strategy", function(){
     var spy = {},
-        spyFn = jasmine.createSpy('spyFn').andReturn(spy),
+        spyFn = jasmine.createSpy('spyFn').and.callReturn(spy),
         spyStrategy = new j$.SpyStrategy({getSpy: spyFn});
 
     expect(spyStrategy.callThrough()).toBe(spy);
