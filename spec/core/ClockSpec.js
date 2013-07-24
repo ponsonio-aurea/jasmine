@@ -221,8 +221,15 @@ describe("Clock (acceptance)", function() {
 
     clock.install();
 
-    clock.setTimeout(delayedFn1, 0, 'some', 'arg');
-    var intervalId = clock.setInterval(recurring1, 50, 'some', 'other', 'args');
+    var intervalId;
+    if (jasmine.getEnv().ieVersion > 8) {
+      clock.setTimeout(delayedFn1, 0, 'some', 'arg');
+      intervalId = clock.setInterval(recurring1, 50, 'some', 'other', 'args');
+    } else {
+      clock.setTimeout(function(){ delayedFn1('some', 'arg'); }, 0);
+      intervalId = clock.setInterval(function(){ recurring1('some', 'other', 'args'); }, 50);
+    }
+
     clock.setTimeout(delayedFn2, 100);
     clock.setTimeout(delayedFn3, 200);
 
@@ -298,7 +305,7 @@ describe("Clock (acceptance)", function() {
       clock = new j$.Clock(global, delayedFunctionScheduler);
 
     expect(function() {
-      clock.clearTimeout(123)
+      clock.clearTimeout(123);
     }).not.toThrow();
   });
 
@@ -308,7 +315,7 @@ describe("Clock (acceptance)", function() {
       clock = new j$.Clock(global, delayedFunctionScheduler);
 
     expect(function() {
-      clock.clearInterval(123)
+      clock.clearInterval(123);
     }).not.toThrow();
   });
 });

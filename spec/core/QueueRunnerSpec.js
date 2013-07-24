@@ -22,6 +22,7 @@ describe("QueueRunner", function() {
   it("supports asynchronous functions, only advancing to next function after a done() callback", function() {
     //TODO: it would be nice if spy arity could match the fake, so we could do something like:
     //createSpy('asyncfn').and.callFake(function(done) {});
+    jasmine.getEnv().clock.install();
 
     var onComplete = jasmine.createSpy('onComplete'),
       beforeCallback = jasmine.createSpy('beforeCallback'),
@@ -30,27 +31,29 @@ describe("QueueRunner", function() {
       fn1 = function(done) {
         beforeCallback();
         setTimeout(function() {
-          done()
+          done();
         }, 100);
       },
       fn2 = function(done) {
         fnCallback();
         setTimeout(function() {
-          done()
+          done();
         }, 100);
       },
       fn3 = function(done) {
         afterCallback();
         setTimeout(function() {
-          done()
+          done();
         }, 100);
       },
+
       queueRunner = new j$.QueueRunner({
         fns: [fn1, fn2, fn3],
-        onComplete: onComplete
+        onComplete: onComplete,
+        timer: clock,
+        asyncSpecTimeout: 1000
       });
 
-    clock.install();
 
     queueRunner.execute();
 

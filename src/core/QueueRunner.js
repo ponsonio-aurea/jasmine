@@ -8,9 +8,8 @@ getJasmineRequireObj().QueueRunner = function() {
     this.catchException = attrs.catchException || function() { return true; };
     
     this.timer = attrs.realTimer;
+    this.leaf = attrs.leaf;
     this.asyncSpecTimeout = attrs.asyncSpecTimeout || 60000;
-
-    this.leaf = attrs.leaf || false;
   }
 
   QueueRunner.prototype.execute = function() {
@@ -21,18 +20,16 @@ getJasmineRequireObj().QueueRunner = function() {
     var length = fns.length,
         self = this,
         iterativeIndex;
-    
-    var nextIteration = function(currentIteration) {
-      return function() {
-        self.run(fns, currentIteration + 1);
-      };
-    };
 
     for(iterativeIndex = recursiveIndex; iterativeIndex < length; iterativeIndex++) {
       var fn = fns[iterativeIndex];
 
       if (fn.length > 0) {
-        var attemptSuccessful = attempt(fn, nextIteration(iterativeIndex));
+        var nextIteration = function() {
+          self.run(fns, iterativeIndex + 1);
+        };
+
+        var attemptSuccessful = attempt(fn, nextIteration);
 
         if(attemptSuccessful) {
           return;
@@ -54,15 +51,15 @@ getJasmineRequireObj().QueueRunner = function() {
       var timeout;
 
       try {
-        if (self.leaf) {
-          timeout = self.timer.setTimeout(function() { 
+        if (self.leaf && arguments.length !== 1) {
+          timeout = Function.prototype.call.apply(self.timer.setTimeout, [window, function() { 
             self.onException(new Error("timeout"));
             done();
-          }, self.asyncSpecTimeout);
+          }, self.asyncSpecTimeout]);
         }
 
         var next = function() {
-          if (self.leaf) { self.timer.clearTimeout(timeout); }
+          if (timeout !== void 0) { Function.prototype.call.apply(self.timer.clearTimeout, [window, timeout]); }
           done();
         };
         

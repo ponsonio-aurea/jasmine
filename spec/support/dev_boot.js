@@ -1,13 +1,15 @@
 // Jasmine boot.js for browser runners - exposes external/global interface, builds the Jasmine environment and executes it.
 (function() {
+  // fix for IE8 and the window.prototype functions
+  window.setTimeout = window.setTimeout;
+  window.setInterval = window.setInterval;
+  window.clearTimeout = window.clearTimeout;
+  window.clearInterval = window.clearInterval;
 
   window.jasmine = jasmineRequire.core(jasmineRequire);
   jasmineRequire.html(jasmine);
 
   var env = jasmine.getEnv();
-
-  SUPER_TIMEOUT = setTimeout;
-  SUPER_CLEAR_TIMEOUT = clearTimeout;
 
   var jasmineInterface = {
     describe: function(description, specDefinitions) {
