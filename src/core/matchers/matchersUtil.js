@@ -2,10 +2,64 @@ getJasmineRequireObj().matchersUtil = function(j$) {
   // TODO: what to do about jasmine.pp not being inject? move to JSON.stringify? gut PrettyPrinter?
 
   return {
-    equals: function(a, b, customTesters) {
-      customTesters = customTesters || [];
+    equals: equals,
 
-      return eq(a, b, [], [], customTesters);
+    DiffBuilder: function() {
+      var util = this,
+        path = [],
+        mismatches = [];
+
+      return {
+        record: function (actual, expected, formatter) {
+          formatter = formatter || defaultFormatter;
+          mismatches.push(formatter(actual, expected, printPath()));
+        },
+        getMessage: function () {
+          return mismatches.join('\n');
+        },
+        withPath: function (pathComponent, block) {
+          path.push(pathComponent);
+          block();
+          path.pop();
+        }
+      };
+
+      function printPath() {
+        if (path.length > 0) {
+          return '$' + map(path, formatPropertyAccess).join('');
+        } else {
+          return '';
+        }
+      }
+
+      function defaultFormatter (actual, expected, path) {
+        return 'Expected ' +
+          path + (path.length ? ' = ' : '') +
+          j$.pp(actual) +
+          ' to equal ' +
+          j$.pp(expected) +
+          '.';
+      }
+
+      function formatPropertyAccess(property) {
+        if (typeof property === 'string') {
+          if (/^[A-Za-z\$_][A-Za-z0-9\$_]*$/.test(property)) {
+            return '.' + property;
+          } else {
+            return '["' + property + '"]';
+          }
+        } else {
+          return '[' + property + ']';
+        }
+      }
+
+      function map(array, fn) {
+        var results = [];
+        for (var i = 0; i < array.length; i++) {
+          results.push(fn(array[i]));
+        }
+        return results;
+      }
     },
 
     contains: function(haystack, needle, customTesters) {
@@ -15,7 +69,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         (!!haystack && !haystack.indexOf))
       {
         for (var i = 0; i < haystack.length; i++) {
-          if (eq(haystack[i], needle, [], [], customTesters)) {
+          if (equals(haystack[i], needle, customTesters)) {
             return true;
           }
         }
@@ -51,6 +105,13 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
   };
 
+  function NullDiffBuilder() {
+    return {
+      record: function() {},
+      withPath: function(_, block) { block(); }
+    };
+  }
+
   function isAsymmetric(obj) {
     return obj && j$.isA_('Function', obj.asymmetricMatch);
   }
@@ -72,17 +133,24 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
   }
 
+  function equals(a, b, customTesters, diffBuilder) {
+    customTesters = customTesters || [];
+    diffBuilder = diffBuilder || NullDiffBuilder();
+
+    return eq(a, b, [], [], customTesters, diffBuilder);
+  }
+
   // Equality function lovingly adapted from isEqual in
   //   [Underscore](http://underscorejs.org)
-  function eq(a, b, aStack, bStack, customTesters) {
-    var result = true;
+  function eq(a, b, aStack, bStack, customTesters, diffBuilder) {
+    var result = true, i;
 
     var asymmetricResult = asymmetricMatch(a, b);
     if (!j$.util.isUndefined(asymmetricResult)) {
       return asymmetricResult;
     }
 
-    for (var i = 0; i < customTesters.length; i++) {
+    for (i = 0; i < customTesters.length; i++) {
       var customTesterResult = customTesters[i](a, b);
       if (!j$.util.isUndefined(customTesterResult)) {
         return customTesterResult;
@@ -97,25 +165,46 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
     if (a === b) { return a !== 0 || 1 / a == 1 / b; }
     // A strict comparison is necessary because `null == undefined`.
-    if (a === null || b === null) { return a === b; }
+    if (a === null || b === null) {
+      result = a === b;
+      if (!result) {
+        diffBuilder.record(a, b);
+      }
+      return result;
+    }
     var className = Object.prototype.toString.call(a);
-    if (className != Object.prototype.toString.call(b)) { return false; }
+    if (className != Object.prototype.toString.call(b)) {
+      diffBuilder.record(a, b);
+      return false;
+    }
     switch (className) {
       // Strings, numbers, dates, and booleans are compared by value.
       case '[object String]':
         // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
         // equivalent to `new String("5")`.
-        return a == String(b);
+        result = a == String(b);
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
       case '[object Number]':
         // `NaN`s are equivalent, but non-reflexive. An `egal` comparison is performed for
         // other numeric values.
-        return a != +a ? b != +b : (a === 0 ? 1 / a == 1 / b : a == +b);
+        result = a != +a ? b != +b : (a === 0 ? 1 / a == 1 / b : a == +b);
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
       case '[object Date]':
       case '[object Boolean]':
         // Coerce dates and booleans to numeric primitive values. Dates are compared by their
         // millisecond representations. Note that invalid dates with millisecond representations
         // of `NaN` are not equivalent.
-        return +a == +b;
+        result = +a == +b;
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
       // RegExps are compared by their source patterns and flags.
       case '[object RegExp]':
         return a.source == b.source &&
@@ -164,11 +253,14 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     if (className == '[object Array]') {
       size = a.length;
       if (size !== b.length) {
+        diffBuilder.record(a, b);
         return false;
       }
 
       while (size--) {
-        result = eq(a[size], b[size], aStack, bStack, customTesters);
+        diffBuilder.withPath(size, function() {
+          result = eq(a[size], b[size], aStack, bStack, customTesters, diffBuilder);
+        });
         if (!result) {
           return false;
         }
@@ -189,50 +281,64 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     size = aKeys.length;
 
     // Ensure that both objects contain the same number of properties before comparing deep equality.
-    if (keys(b, className == '[object Array]').length !== size) { return false; }
-
-    while (size--) {
-      key = aKeys[size];
-      // Deep compare each member
-      result = has(b, key) && eq(a[key], b[key], aStack, bStack, customTesters);
-
-      if (!result) {
-        return false;
-      }
+    if (keys(b, className == '[object Array]').length !== size) {
+      diffBuilder.record(a, b, objectKeysAreDifferentFormatter);
+      return false;
     }
+
+    for (i = 0; i < size; i++) {
+      key = aKeys[i];
+      // Deep compare each member
+      if (!has(b, key)) {
+        diffBuilder.record(a, b, objectKeysAreDifferentFormatter);
+        result = false;
+        continue;
+      }
+
+      diffBuilder.withPath(key, function() {
+        if(!eq(a[key], b[key], aStack, bStack, customTesters, diffBuilder)) {
+          result = false;
+        }
+      });
+    }
+
+    if (!result) {
+      return false;
+    }
+
     // Remove the first object from the stack of traversed objects.
     aStack.pop();
     bStack.pop();
 
     return result;
-
-    function keys(obj, isArray) {
-      var allKeys = Object.keys ? Object.keys(obj) :
-        (function(o) {
-            var keys = [];
-            for (var key in o) {
-                if (has(o, key)) {
-                    keys.push(key);
-                }
-            }
-            return keys;
-        })(obj);
-
-      if (!isArray) {
-        return allKeys;
-      }
-
-      var extraKeys = [];
-      for (var i in allKeys) {
-        if (!allKeys[i].match(/^[0-9]+$/)) {
-          extraKeys.push(allKeys[i]);
-        }
-      }
-
-      return extraKeys;
-    }
   }
-  
+
+  function keys(obj, isArray) {
+    var allKeys = Object.keys ? Object.keys(obj) :
+      (function(o) {
+          var keys = [];
+          for (var key in o) {
+              if (has(o, key)) {
+                  keys.push(key);
+              }
+          }
+          return keys;
+      })(obj);
+
+    if (!isArray) {
+      return allKeys;
+    }
+
+    var extraKeys = [];
+    for (var i in allKeys) {
+      if (!allKeys[i].match(/^[0-9]+$/)) {
+        extraKeys.push(allKeys[i]);
+      }
+    }
+
+    return extraKeys;
+  }
+
   function has(obj, key) {
     return Object.prototype.hasOwnProperty.call(obj, key);
   }
@@ -241,11 +347,29 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     return typeof obj === 'function';
   }
 
-  function isObjectConstructor(ctor) {
-    // aCtor instanceof aCtor is true for the Object and Function
-    // constructors (since a constructor is-a Function and a function is-a
-    // Object). We don't just compare ctor === Object because the constructor
-    // might come from a different frame with different globals.
-    return isFunction(ctor) && ctor instanceof ctor;
+  function objectKeysAreDifferentFormatter(actual, expected, path) {
+    var missingProperties = j$.util.objectDifference(expected, actual),
+        extraProperties = j$.util.objectDifference(actual, expected),
+        missingPropertiesMessage = formatKeyValuePairs(missingProperties),
+        extraPropertiesMessage = formatKeyValuePairs(extraProperties),
+        messages = [];
+
+    if (missingPropertiesMessage.length) {
+      messages.push('Expected ' + path + ' to have properties' + missingPropertiesMessage);
+    }
+
+    if (extraPropertiesMessage.length) {
+      messages.push('Expected ' + path + ' not to have properties' + extraPropertiesMessage);
+    }
+
+    return messages.join('\n');
+  }
+
+  function formatKeyValuePairs(obj) {
+    var formatted = '';
+    for (var key in obj) {
+      formatted += '\n    ' + key + ': ' + j$.pp(obj[key]);
+    }
+    return formatted;
   }
 };

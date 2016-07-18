@@ -25,4 +25,21 @@ describe("jasmineUnderTest.util", function() {
       expect(jasmineUnderTest.util.isUndefined(undefined)).toBe(false);
     });
   });
+
+  describe("objectDifference", function() {
+    it("given two objects A and B, returns the properties in A not present in B", function() {
+      var a = {
+        foo: 3,
+        bar: 4,
+        baz: 5
+      }
+
+      var b = {
+        bar: 6,
+        quux: 7
+      }
+
+      expect(jasmineUnderTest.util.objectDifference(a, b)).toEqual({foo: 3, baz: 5})
+    })
+  })
 });

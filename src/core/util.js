@@ -55,5 +55,27 @@ getJasmineRequireObj().util = function() {
     return cloned;
   };
 
+  util.difference = function(array, toRemove) {
+    var diff = [];
+    for (var i = 0; i < array.length; i++) {
+      if (toRemove.indexOf(array[i]) < 0) {
+        diff.push(array[i]);
+      }
+    }
+    return diff;
+  };
+
+  util.objectDifference = function(obj, toRemove) {
+    var diff = {};
+
+    for (var key in obj) {
+      if (!(key in toRemove)) {
+        diff[key] = obj[key];
+      }
+    }
+
+    return diff;
+  };
+
   return util;
 };
