@@ -267,6 +267,63 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
+  it("reports mismatches between objects with different constructors", function () {
+    function Foo() {}
+    function Bar() {}
+
+    var actual = {x: new Foo()},
+        expected = {x: new Bar()},
+        message = "Expected $.x to be a kind of Bar, but was Foo({  }).";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports type mismatches at the root level", function () {
+    function Foo() {}
+    function Bar() {}
+
+    var actual = new Foo(),
+      expected = new Bar(),
+      message = "Expected object to be a kind of Bar, but was Foo({  }).";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports mismatches between objects with their own constructor property", function () {
+    function Foo() {}
+    function Bar() {}
+
+    var actual = {x: {constructor: 'blerf'}},
+        expected = {x: {constructor: 'ftarrh'}},
+        message = "Expected $.x.constructor = 'blerf' to equal 'ftarrh'.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports mismatches between an object with a real constructor and one with its own constructor property", function () {
+    function Foo() {}
+    function Bar() {}
+
+    var actual = {x: {}},
+      expected = {x: {constructor: 'ftarrh'}},
+      message =
+        "Expected $.x to have properties\n" +
+        "    constructor: 'ftarrh'";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+    expect(compareEquals(expected, actual).message).toEqual(
+      "Expected $.x not to have properties\n    constructor: 'ftarrh'"
+    );
+  });
+
+  xit("reports asymmetric mismatches");
+  xit("reports mismatches between 0 and -0");
+  xit("reports mismatches from custom testers");
+  xit("reports mismatches between Errors");
+  xit("reports mismatches between Functions");
+  xit("reports mismatches between DOM nodes");
+  xit("reports mismatches between a DOM node and something that's not a DOM node");
+
   xit("works on big complex stuff", function() {
     var actual = {
       foo: [

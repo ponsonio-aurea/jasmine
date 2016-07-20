@@ -212,7 +212,10 @@ getJasmineRequireObj().matchersUtil = function(j$) {
           a.multiline == b.multiline &&
           a.ignoreCase == b.ignoreCase;
     }
-    if (typeof a != 'object' || typeof b != 'object') { return false; }
+    if (typeof a != 'object' || typeof b != 'object') {
+      // TODO: diffBuilder.record(a, b);
+      return false;
+    }
 
     var aIsDomNode = j$.isDomNode(a);
     var bIsDomNode = j$.isDomNode(b);
@@ -259,8 +262,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
 
       for (i = 0; i < size; i++) {
         diffBuilder.withPath(i, function() {
-          result = eq(a[i], b[i], aStack, bStack, customTesters, diffBuilder)
-            && result;
+          result = eq(a[i], b[i], aStack, bStack, customTesters, diffBuilder) && result;
         });
       }
       if (!result) {
@@ -271,8 +273,12 @@ getJasmineRequireObj().matchersUtil = function(j$) {
       // Objects with different constructors are not equivalent, but `Object`s
       // or `Array`s from different frames are.
       var aCtor = a.constructor, bCtor = b.constructor;
-      if (aCtor !== bCtor && !(isObjectConstructor(aCtor) &&
-                               isObjectConstructor(bCtor))) {
+      if (aCtor !== bCtor &&
+          isFunction(aCtor) && isFunction(bCtor) &&
+          a instanceof aCtor && b instanceof bCtor &&
+          !(aCtor instanceof aCtor && bCtor instanceof bCtor)) {
+
+        diffBuilder.record(a, b, constructorsAreDifferentFormatter);
         return false;
       }
     }
@@ -290,7 +296,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     for (i = 0; i < size; i++) {
       key = aKeys[i];
       // Deep compare each member
-      if (!has(b, key)) {
+      if (!j$.util.has(b, key)) {
         diffBuilder.record(a, b, objectKeysAreDifferentFormatter);
         result = false;
         continue;
@@ -319,7 +325,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
       (function(o) {
           var keys = [];
           for (var key in o) {
-              if (has(o, key)) {
+              if (j$.util.has(o, key)) {
                   keys.push(key);
               }
           }
@@ -338,10 +344,6 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
 
     return extraKeys;
-  }
-
-  function has(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
   }
 
   function isFunction(obj) {
@@ -368,6 +370,17 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
 
     return messages.join('\n');
+  }
+
+  function constructorsAreDifferentFormatter(actual, expected, path) {
+    if (!path.length) {
+      path = 'object';
+    }
+
+    return 'Expected ' +
+      path + ' to be a kind of ' +
+      expected.constructor.name +
+      ', but was ' + j$.pp(actual) + '.';
   }
 
   function formatKeyValuePairs(obj) {
