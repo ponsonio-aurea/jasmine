@@ -112,6 +112,18 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
+  it("reports extra and missing properties of the root-level object", function() {
+    var actual = {x: 1},
+      expected = {a: 1},
+      message =
+        "Expected object to have properties\n" +
+        "    a: 1\n" +
+        "Expected object not to have properties\n" +
+        "    x: 1";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
   it("reports multiple incorrect values", function() {
     var actual = {x: 1, y: 2},
       expected = {x: 3, y: 4},

@@ -355,6 +355,10 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         extraPropertiesMessage = formatKeyValuePairs(extraProperties),
         messages = [];
 
+    if (!path.length) {
+      path = 'object';
+    }
+
     if (missingPropertiesMessage.length) {
       messages.push('Expected ' + path + ' to have properties' + missingPropertiesMessage);
     }
