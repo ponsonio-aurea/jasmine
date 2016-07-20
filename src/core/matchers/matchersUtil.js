@@ -257,13 +257,14 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         return false;
       }
 
-      while (size--) {
-        diffBuilder.withPath(size, function() {
-          result = eq(a[size], b[size], aStack, bStack, customTesters, diffBuilder);
+      for (i = 0; i < size; i++) {
+        diffBuilder.withPath(i, function() {
+          result = eq(a[i], b[i], aStack, bStack, customTesters, diffBuilder)
+            && result;
         });
-        if (!result) {
-          return false;
-        }
+      }
+      if (!result) {
+        return false;
       }
     } else {
 

@@ -61,8 +61,12 @@ describe("matchersUtil", function() {
       expect(jasmineUnderTest.matchersUtil.equals(foo, [undefined])).toBe(true);
     });
 
-    it("fails for Arrays that are not equivalent", function() {
+    it("fails for Arrays that have different lengths", function() {
       expect(jasmineUnderTest.matchersUtil.equals([1, 2], [1, 2, 3])).toBe(false);
+    });
+
+    it("fails for Arrays that have different elements", function() {
+      expect(jasmineUnderTest.matchersUtil.equals([1, 2, 3], [1, 5, 3])).toBe(false);
     });
 
     it("fails for Arrays whose contents are equivalent, but have differing properties", function() {

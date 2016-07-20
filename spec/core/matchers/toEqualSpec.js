@@ -163,6 +163,16 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
+  it("reports a mismatch between multiple array elements", function() {
+    var actual = [2, 2, 5],
+      expected = [1, 2, 3],
+      message =
+        "Expected $[0] = 2 to equal 1.\n" +
+        "Expected $[2] = 5 to equal 3.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
   it("reports a mismatch between properties of objects in arrays", function() {
     var actual = [{x: 1}],
       expected = [{x: 2}],
