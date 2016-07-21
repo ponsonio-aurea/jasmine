@@ -158,12 +158,22 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
 
     if (a instanceof Error && b instanceof Error) {
-      return a.message == b.message;
+      result = a.message == b.message;
+      if (!result) {
+        diffBuilder.record(a, b);
+      }
+      return result;
     }
 
     // Identical objects are equal. `0 === -0`, but they aren't identical.
     // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
-    if (a === b) { return a !== 0 || 1 / a == 1 / b; }
+    if (a === b) {
+      result = a !== 0 || 1 / a == 1 / b;
+      if (!result) {
+        diffBuilder.record(a, b);
+      }
+      return result
+    }
     // A strict comparison is necessary because `null == undefined`.
     if (a === null || b === null) {
       result = a === b;
@@ -213,7 +223,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
           a.ignoreCase == b.ignoreCase;
     }
     if (typeof a != 'object' || typeof b != 'object') {
-      // TODO: diffBuilder.record(a, b);
+      diffBuilder.record(a, b);
       return false;
     }
 

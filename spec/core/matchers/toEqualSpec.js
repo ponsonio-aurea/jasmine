@@ -316,12 +316,35 @@ describe("toEqual", function() {
     );
   });
 
-  xit("reports asymmetric mismatches");
-  xit("reports mismatches between 0 and -0");
+  it("reports mismatches between 0 and -0", function() {
+    var actual = {x: 0},
+      expected = {x: -0},
+      message = "Expected $.x = 0 to equal -0.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports mismatches between Errors", function() {
+    var actual = {x: new Error("the error you got")},
+      expected = {x: new Error("the error you want")},
+      message = "Expected $.x = Error: the error you got to equal Error: the error you want.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports mismatches between Functions", function() {
+    var actual = {x: function() {}},
+      expected = {x: function() {}},
+      message = "Expected $.x = Function to equal Function.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  xit("reports mismatches between DOM nodes", function() {
+  });
+
   xit("reports mismatches from custom testers");
-  xit("reports mismatches between Errors");
-  xit("reports mismatches between Functions");
-  xit("reports mismatches between DOM nodes");
+  xit("reports asymmetric mismatches");
   xit("reports mismatches between a DOM node and something that's not a DOM node");
 
   xit("works on big complex stuff", function() {
