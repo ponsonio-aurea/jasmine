@@ -443,40 +443,4 @@ describe("matchersUtil", function() {
       expect(message).toEqual("Expected 'foo' to bar 'quux', 'corge'.");
     });
   });
-
-  describe("DiffBuilder", function() {
-    it("records the actual and expected objects", function () {
-      var d = jasmineUnderTest.matchersUtil.DiffBuilder();
-
-      d.record('foo', 'bar');
-
-      expect(d.getMessage()).toEqual("Expected 'foo' to equal 'bar'.");
-    });
-
-    it("prints the path to the mismatch in the failure message", function () {
-      var d = jasmineUnderTest.matchersUtil.DiffBuilder();
-
-      d.withPath('user', function() {
-        d.withPath('name', function() {
-          d.record('Alice', 'Bob');
-        });
-      });
-
-      expect(d.getMessage()).toEqual("Expected $.user.name = 'Alice' to equal 'Bob'.");
-    });
-
-    it("optionally formats messages with a custom formatter function", function () {
-      var d = jasmineUnderTest.matchersUtil.DiffBuilder();
-
-      function formatter (actual, expected, path) {
-        return "I'm a custom message! " + actual + expected + path
-      }
-
-      d.withPath('foo', function () {
-        d.record(1, 2, formatter)
-      })
-
-      expect(d.getMessage()).toEqual("I'm a custom message! 12$.foo")
-    })
-  });
 });

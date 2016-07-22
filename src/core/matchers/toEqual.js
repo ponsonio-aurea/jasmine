@@ -1,4 +1,4 @@
-getJasmineRequireObj().toEqual = function() {
+getJasmineRequireObj().toEqual = function(j$) {
 
   function toEqual(util, customEqualityTesters) {
     customEqualityTesters = customEqualityTesters || [];
@@ -8,7 +8,7 @@ getJasmineRequireObj().toEqual = function() {
         var result = {
             pass: false
           },
-          diffBuilder = util.DiffBuilder();
+          diffBuilder = j$.DiffBuilder();
 
         result.pass = util.equals(actual, expected, customEqualityTesters, diffBuilder);
 
