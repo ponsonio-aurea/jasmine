@@ -47,13 +47,6 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     }
   };
 
-  function NullDiffBuilder() {
-    return {
-      record: function() {},
-      withPath: function(_, block) { block(); }
-    };
-  }
-
   function isAsymmetric(obj) {
     return obj && j$.isA_('Function', obj.asymmetricMatch);
   }
@@ -77,7 +70,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
 
   function equals(a, b, customTesters, diffBuilder) {
     customTesters = customTesters || [];
-    diffBuilder = diffBuilder || NullDiffBuilder();
+    diffBuilder = diffBuilder || j$.NullDiffBuilder();
 
     return eq(a, b, [], [], customTesters, diffBuilder);
   }
@@ -114,7 +107,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
       if (!result) {
         diffBuilder.record(a, b);
       }
-      return result
+      return result;
     }
     // A strict comparison is necessary because `null == undefined`.
     if (a === null || b === null) {

@@ -55,5 +55,5 @@ getJasmineRequireObj().DiffBuilder = function(j$) {
       }
       return results;
     }
-  }
+  };
 };
