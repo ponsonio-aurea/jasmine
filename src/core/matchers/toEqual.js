@@ -1,6 +1,6 @@
 getJasmineRequireObj().toEqual = function() {
 
-  function toEqual(util, customEqualityTesters, formatErrorMsg) {
+  function toEqual(util, customEqualityTesters) {
     customEqualityTesters = customEqualityTesters || [];
 
     return {
