@@ -64,7 +64,7 @@ describe("toEqual", function() {
   it("formats property access so that it's valid JavaScript", function() {
     var actual = {'my prop': 1},
       expected = {'my prop': 2},
-      message = 'Expected $["my prop"] = 1 to equal 2.';
+      message = "Expected $['my prop'] = 1 to equal 2.";
 
     expect(compareEquals(actual, expected).message).toEqual(message);
   });

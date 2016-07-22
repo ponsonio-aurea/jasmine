@@ -302,7 +302,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         extraPropertiesMessage = formatKeyValuePairs(extraProperties),
         messages = [];
 
-    if (!path.length) {
+    if (!path.depth()) {
       path = 'object';
     }
 
@@ -318,7 +318,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
   }
 
   function constructorsAreDifferentFormatter(actual, expected, path) {
-    if (!path.length) {
+    if (!path.depth()) {
       path = 'object';
     }
 
