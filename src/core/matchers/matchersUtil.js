@@ -158,10 +158,14 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         return result;
       // RegExps are compared by their source patterns and flags.
       case '[object RegExp]':
-        return a.source == b.source &&
+        result = a.source == b.source &&
           a.global == b.global &&
           a.multiline == b.multiline &&
           a.ignoreCase == b.ignoreCase;
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
     }
     if (typeof a != 'object' || typeof b != 'object') {
       diffBuilder.record(a, b);
@@ -267,10 +271,6 @@ getJasmineRequireObj().matchersUtil = function(j$) {
           result = false;
         }
       });
-    }
-
-    if (!result) {
-      return false;
     }
 
     // Remove the first object from the stack of traversed objects.

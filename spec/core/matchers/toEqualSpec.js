@@ -371,6 +371,14 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
+  it("reports mismatches between Regexps", function() {
+    var actual = /foo/,
+      expected = /bar/,
+      message = "Expected /foo/ to equal /bar/.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
   it("reports mismatches in objects with cycles", function() {
     var a = {};
     var b = {};
