@@ -82,12 +82,18 @@ getJasmineRequireObj().matchersUtil = function(j$) {
 
     var asymmetricResult = asymmetricMatch(a, b);
     if (!j$.util.isUndefined(asymmetricResult)) {
+      if (!asymmetricResult) {
+        diffBuilder.record(a, b);
+      }
       return asymmetricResult;
     }
 
     for (i = 0; i < customTesters.length; i++) {
       var customTesterResult = customTesters[i](a, b);
       if (!j$.util.isUndefined(customTesterResult)) {
+        if (!customTesterResult) {
+          diffBuilder.record(a, b);
+        }
         return customTesterResult;
       }
     }
@@ -184,6 +190,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         return result;
       }
       if (aIsElement || bIsElement) {
+        diffBuilder.record(a, b);
         return false;
       }
       return a.innerText == b.innerText && a.textContent == b.textContent;

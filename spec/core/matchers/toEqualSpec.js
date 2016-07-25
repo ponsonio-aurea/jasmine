@@ -360,12 +360,50 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
-  xit("reports mismatches from custom testers");
-  xit("reports asymmetric mismatches");
-  xit("reports mismatches between a DOM node and something that's not a DOM node");
-  xit("reports mismatches in objects with cycles");
+  it("reports mismatches between a DOM node and something that's not a DOM node", function() {
+    if (typeof document !== 'object') {
+      return;
+    }
+    var actual = {nodeType: 1},
+      expected = document.createElement('div'),
+      message = "Expected HTMLNode to equal HTMLNode.";
 
-  xit("works on big complex stuff", function() {
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("reports mismatches in objects with cycles", function() {
+    var a = {};
+    var b = {};
+
+    a.self = a;
+    b.self = '';
+
+    expect(compareEquals(a, b).message).toEqual("Expected $.self = Object({ self: <circular reference: Object> }) to equal ''.");
+  });
+
+  it("reports mismatches from custom testers", function() {
+    function compareByIdentity(a, b) {
+      return a === b;
+    }
+
+    var util = jasmineUnderTest.matchersUtil,
+      matcher = jasmineUnderTest.matchers.toEqual(util, [compareByIdentity]);
+
+    var a = {id: 1},
+        b = {id: 1};
+
+    expect(matcher.compare(a, b).message).toEqual("Expected Object({ id: 1 }) to equal Object({ id: 1 }).")
+  });
+
+  it("reports asymmetric mismatches", function() {
+    var actual = 'foo',
+      expected = jasmineUnderTest.any(Number),
+      message = "Expected 'foo' to equal <jasmine.any(Number)>.";
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
+  });
+
+  it("works on big complex stuff", function() {
     var actual = {
       foo: [
         {bar: 1, things: ['a', 'b']},
@@ -398,22 +436,23 @@ describe("toEqual", function() {
       boolean: true,
       notDefined: void 0,
       aNull: null
-    }
+    };
 
-    var message =
-      'Expected $.foo[0].bar = 1 to equal 2.\n' +
-      'Expected $.foo[0].things = Array[2] to have length 3.\n' +
-      'Expected $.foo[1].things[1] = "b" to equal "d".\n' +
-      'Expected $.baz[0].a to have properties.\n' +
-      '    c: 1\n' +
-      'Expected $.quux = 1 to equal [object Array].\n' +
-      'Expected $.nan = 0 to equal NaN.\n' +
-      'Expected $.aRegexp = "hi" to equal /hi/.\n' +
-      'Expected $.inf = -Infinity to equal Infinity.\n' +
-      'Expected $.boolean = false to equal true.\n' +
-      'Expected $.notDefined = 0 to equal undefined.\n' +
+    var messages = [
+      'Expected $.foo[0].bar = 1 to equal 2.',
+      "Expected $.foo[0].things = [ 'a', 'b' ] to equal [ 'a', 'b', 'c' ].",
+      "Expected $.foo[1].things[1] = 'b' to equal 'd'.",
+      'Expected $.baz[0].a to have properties',
+      '    c: 1',
+      'Expected $.quux = 1 to equal [  ].',
+      'Expected $.nan = 0 to equal NaN.',
+      "Expected $.aRegexp = 'hi' to equal /hi/.",
+      'Expected $.inf = -Infinity to equal Infinity.',
+      'Expected $.boolean = false to equal true.',
+      'Expected $.notDefined = 0 to equal undefined.',
       'Expected $.aNull = undefined to equal null.'
+    ];
 
-    expect(compareEquals(actual, expected).message).toEqual(message);
+    expect(compareEquals(actual, expected).message.split('\n')).toEqual(messages);
   })
 });
