@@ -167,13 +167,21 @@ getJasmineRequireObj().matchersUtil = function(j$) {
     if (aIsDomNode && bIsDomNode) {
       // At first try to use DOM3 method isEqualNode
       if (a.isEqualNode) {
-        return a.isEqualNode(b);
+        result = a.isEqualNode(b);
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
       }
       // IE8 doesn't support isEqualNode, try to use outerHTML && innerText
       var aIsElement = a instanceof Element;
       var bIsElement = b instanceof Element;
       if (aIsElement && bIsElement) {
-        return a.outerHTML == b.outerHTML;
+        result = a.outerHTML == b.outerHTML;
+        if (!result) {
+          diffBuilder.record(a, b);
+        }
+        return result;
       }
       if (aIsElement || bIsElement) {
         return false;
@@ -324,7 +332,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
 
     return 'Expected ' +
       path + ' to be a kind of ' +
-      expected.constructor.name +
+      j$.util.functionName(expected.constructor) +
       ', but was ' + j$.pp(actual) + '.';
   }
 

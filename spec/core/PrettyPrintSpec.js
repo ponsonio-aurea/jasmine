@@ -81,8 +81,20 @@ describe("jasmineUnderTest.pp", function () {
   });
 
   it("should print 'null' as the constructor of an object with its own constructor property", function() {
+    if (jasmine.getEnv().ieVersion < 9) {
+      return;
+    }
     expect(jasmineUnderTest.pp({constructor: function() {}})).toEqual("null({ constructor: Function })");
     expect(jasmineUnderTest.pp({constructor: 'foo'})).toEqual("null({ constructor: 'foo' })");
+  });
+
+  it("should print 'null' as the constructor of an object with its own constructor property (in IE8)", function() {
+    // the constructor property is not enumerable in IE8, even if it's set as an owned property of the object.
+    if (jasmine.getEnv().ieVersion !== 8) {
+      return;
+    }
+    expect(jasmineUnderTest.pp({constructor: function() {}})).toEqual("null({  })");
+    expect(jasmineUnderTest.pp({constructor: 'foo'})).toEqual("null({  })");
   });
 
   it("should not include inherited properties when stringifying an object", function() {

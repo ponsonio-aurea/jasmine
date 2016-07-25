@@ -104,6 +104,28 @@ describe("matchersUtil", function() {
       expect(jasmineUnderTest.matchersUtil.equals(new One(), new Two())).toBe(false);
     });
 
+    it("fails for objects with their own (different) constructor properties", function() {
+      if (jasmine.getEnv().ieVersion < 9) {
+        return;
+      }
+
+      var a = {constructor: 'foo'},
+          b = {constructor: 'bar'};
+
+      expect(jasmineUnderTest.matchersUtil.equals(a, b)).toBe(false);
+    });
+
+    it("ignores the constructor property entirely in IE8", function() {
+      if (jasmine.getEnv().ieVersion !== 8) {
+        return;
+      }
+
+      var a = {constructor: 'foo'},
+        b = {constructor: 'bar'};
+
+      expect(jasmineUnderTest.matchersUtil.equals(a, b)).toBe(true);
+    });
+
     it("passes for Objects that are equivalent (simple case)", function() {
       expect(jasmineUnderTest.matchersUtil.equals({a: "foo"}, {a: "foo"})).toBe(true);
     });

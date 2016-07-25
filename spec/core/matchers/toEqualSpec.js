@@ -290,8 +290,11 @@ describe("toEqual", function() {
   });
 
   it("reports mismatches between objects with their own constructor property", function () {
-    function Foo() {}
-    function Bar() {}
+    // IE8 seems to treat all properties named `constructor` as non-enumerable, so objects that differ only
+    // by constructor will be considered equivalent
+    if (jasmine.getEnv().ieVersion < 9) {
+      return;
+    }
 
     var actual = {x: {constructor: 'blerf'}},
         expected = {x: {constructor: 'ftarrh'}},
@@ -301,8 +304,11 @@ describe("toEqual", function() {
   });
 
   it("reports mismatches between an object with a real constructor and one with its own constructor property", function () {
-    function Foo() {}
-    function Bar() {}
+    // IE8 seems to treat all properties named `constructor` as non-enumerable, so objects that differ only
+    // by constructor will be considered equivalent
+    if (jasmine.getEnv().ieVersion < 9) {
+      return;
+    }
 
     var actual = {x: {}},
       expected = {x: {constructor: 'ftarrh'}},
@@ -340,12 +346,24 @@ describe("toEqual", function() {
     expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
-  xit("reports mismatches between DOM nodes", function() {
+  it("reports mismatches between DOM nodes", function() {
+    if (typeof document !== 'object') {
+      return;
+    }
+    var actual = document.createElement('div'),
+      expected = document.createElement('div'),
+      message = "Expected HTMLNode to equal HTMLNode.";
+
+    actual.innerText = 'foo';
+    expected.innerText = 'bar';
+
+    expect(compareEquals(actual, expected).message).toEqual(message);
   });
 
   xit("reports mismatches from custom testers");
   xit("reports asymmetric mismatches");
   xit("reports mismatches between a DOM node and something that's not a DOM node");
+  xit("reports mismatches in objects with cycles");
 
   xit("works on big complex stuff", function() {
     var actual = {

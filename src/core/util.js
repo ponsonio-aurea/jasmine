@@ -71,5 +71,14 @@ getJasmineRequireObj().util = function() {
     return Object.prototype.hasOwnProperty.call(obj, key);
   };
 
+  util.functionName = function(fn) {
+    if (util.has(fn, 'name')) {
+      return fn.name;
+    } else {
+      var string = Function.prototype.toString.call(fn);
+      return /^\s*function\s+([a-zA-Z\$_][a-zA-Z0-9\$_]*)/.exec(string)[1];
+    }
+  };
+
   return util;
 };

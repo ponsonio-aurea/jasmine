@@ -56,6 +56,31 @@ describe("jasmineUnderTest.util", function() {
 
       expect(jasmineUnderTest.util.objectDifference(a, b)).toEqual({x: 1});
       expect(jasmineUnderTest.util.objectDifference(b, a)).toEqual({y: 2});
+    });
+  });
+
+  describe("functionName", function() {
+    it("gets the name of a function", function() {
+      if (jasmine.getEnv().ieVersion < 9) {
+        return;
+      }
+
+      var f = function foo() {
+      };
+
+      expect(jasmineUnderTest.util.functionName(f)).toEqual('foo');
+    });
+
+    it("gets the name of a function in IE8", function() {
+      if (jasmine.getEnv().ieVersion !== 8) {
+        return;
+      }
+
+      var f = function foo() {
+      };
+
+      expect(jasmineUnderTest.util.functionName(f)).toEqual('foo');
     })
+
   })
 });
