@@ -37,8 +37,8 @@ describe("jasmineUnderTest.util", function() {
       expect(jasmineUnderTest.util.isUndefined(a)).toBe(true);
       expect(jasmineUnderTest.util.isUndefined(undefined)).toBe(true);
 
-      var undefined = "diz be undefined yo";
-      expect(jasmineUnderTest.util.isUndefined(undefined)).toBe(false);
+      var not_undefined =  "diz be undefined yo";
+      expect(jasmineUnderTest.util.isUndefined(not_undefined)).toBe(false);
     });
   });
 
